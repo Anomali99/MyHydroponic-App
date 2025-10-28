@@ -18,35 +18,54 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import id.my.anomali99.myhydroponic.ui.theme.MyHydroponicTheme
 
-// --- Layar 2: SettingsScreen ---
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(
+    navController: NavController,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
 
-    var notificationEnabled by remember { mutableStateOf(true) }
-    var thresholdEnabled by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    var phMin by remember { mutableStateOf("6.0") }
-    var phMax by remember { mutableStateOf("7.0") }
-    var tdsMin by remember { mutableStateOf("800") }
-    var tdsMax by remember { mutableStateOf("1200") }
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
+            snackbarHostState.showSnackbar(
+                message = it,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.dismissError()
+        }
+    }
+
+    LaunchedEffect(uiState.saveSuccess) {
+        if (uiState.saveSuccess) {
+            snackbarHostState.showSnackbar(
+                message = "Pengaturan berhasil disimpan!",
+                duration = SnackbarDuration.Short
+            )
+            viewModel.dismissSuccess()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Settings") },
@@ -63,33 +82,48 @@ fun SettingsScreen(navController: NavController) {
             )
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(8.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
 
-            NotificationSettingsCard(
-                notificationEnabled = notificationEnabled,
-                onCheckedChange = { notificationEnabled = it }
-            )
+                NotificationSettingsCard(
+                    notificationEnabled = uiState.notificationEnabled,
+                    onCheckedChange = viewModel::onNotificationEnabledChanged,
+                    enabled = !uiState.isLoading
+                )
 
-            ThresholdSettingsCard(
-                thresholdEnabled = thresholdEnabled,
-                onCheckedChange = { thresholdEnabled = it },
-                phMin = phMin,
-                onPhMinChange = { phMin = it },
-                phMax = phMax,
-                onPhMaxChange = { phMax = it },
-                tdsMin = tdsMin,
-                onTdsMinChange = { tdsMin = it },
-                tdsMax = tdsMax,
-                onTdsMaxChange = { tdsMax = it }
-            )
+                ThresholdSettingsCard(
+                    thresholdEnabled = uiState.thresholdEnabled,
+                    onCheckedChange = viewModel::onThresholdEnabledChanged,
+                    phMin = uiState.phMin,
+                    onPhMinChange = viewModel::onPhMinChanged,
+                    phMax = uiState.phMax,
+                    onPhMaxChange = viewModel::onPhMaxChanged,
+                    tdsMin = uiState.tdsMin,
+                    onTdsMinChange = viewModel::onTdsMinChanged,
+                    tdsMax = uiState.tdsMax,
+                    onTdsMaxChange = viewModel::onTdsMaxChanged,
+                    onSaveClick = viewModel::onSaveClicked,
+                    onCancelClick = viewModel::onCancelClicked,
+                    enabled = !uiState.isLoading
+                )
+            }
+
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
     }
 }
@@ -97,7 +131,8 @@ fun SettingsScreen(navController: NavController) {
 @Composable
 fun NotificationSettingsCard(
     notificationEnabled: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -125,7 +160,8 @@ fun NotificationSettingsCard(
                 )
                 Switch(
                     checked = notificationEnabled,
-                    onCheckedChange = onCheckedChange
+                    onCheckedChange = onCheckedChange,
+                    enabled = enabled
                 )
             }
         }
@@ -140,6 +176,9 @@ fun ThresholdSettingsCard(
     phMax: String, onPhMaxChange: (String) -> Unit,
     tdsMin: String, onTdsMinChange: (String) -> Unit,
     tdsMax: String, onTdsMaxChange: (String) -> Unit,
+    onSaveClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    enabled: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -167,13 +206,15 @@ fun ThresholdSettingsCard(
                 )
                 Switch(
                     checked = thresholdEnabled,
-                    onCheckedChange = onCheckedChange
+                    onCheckedChange = onCheckedChange,
+                    enabled = enabled
                 )
             }
 
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-            // Field untuk pH
+            val fieldsEnabled = enabled && thresholdEnabled
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -183,7 +224,7 @@ fun ThresholdSettingsCard(
                     onValueChange = onPhMinChange,
                     label = { Text("pH Minimal") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    enabled = thresholdEnabled, // Logika enable/disable
+                    enabled = fieldsEnabled,
                     modifier = Modifier.weight(1f)
                 )
                 OutlinedTextField(
@@ -191,14 +232,13 @@ fun ThresholdSettingsCard(
                     onValueChange = onPhMaxChange,
                     label = { Text("pH Maksimal") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    enabled = thresholdEnabled, // Logika enable/disable
+                    enabled = fieldsEnabled,
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Spacer(Modifier.height(16.dp))
 
-            // Field untuk TDS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -208,7 +248,7 @@ fun ThresholdSettingsCard(
                     onValueChange = onTdsMinChange,
                     label = { Text("TDS Min (ppm)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    enabled = thresholdEnabled, // Logika enable/disable
+                    enabled = fieldsEnabled,
                     modifier = Modifier.weight(1f)
                 )
                 OutlinedTextField(
@@ -216,28 +256,25 @@ fun ThresholdSettingsCard(
                     onValueChange = onTdsMaxChange,
                     label = { Text("TDS Max (ppm)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    enabled = thresholdEnabled, // Logika enable/disable
+                    enabled = fieldsEnabled,
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Spacer(Modifier.height(24.dp))
 
-            // Tombol Simpan dan Batal
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End // Taruh tombol di kanan
+                horizontalArrangement = Arrangement.End
             ) {
                 OutlinedButton(
-                    onClick = { /* TODO: Aksi Batal */ },
-                    enabled = thresholdEnabled // Logika enable/disable
+                    onClick = onCancelClick
                 ) {
                     Text("Batal")
                 }
                 Spacer(Modifier.width(16.dp))
                 Button(
-                    onClick = { /* TODO: Aksi Simpan */ },
-                    enabled = thresholdEnabled // Logika enable/disable
+                    onClick = onSaveClick
                 ) {
                     Text("Simpan")
                 }
