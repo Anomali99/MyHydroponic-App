@@ -79,23 +79,20 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    suspend fun changeNotificationHandle(enabled: Boolean) {
-        var isSuccess = false
-
-        if (enabled){
-            isSuccess = manageTopicSubscriptionUseCase.subscribe()
-        } else {
-            isSuccess = manageTopicSubscriptionUseCase.unsubscribe()
-        }
-
-        if (isSuccess){
-            _uiState.update { it.copy(notificationEnabled = enabled) }
-        }
-    }
 
     fun onNotificationEnabledChanged(enabled: Boolean) {
         viewModelScope.launch {
-            changeNotificationHandle(enabled)
+            var isSuccess = false
+
+            isSuccess = if (enabled){
+                manageTopicSubscriptionUseCase.subscribe()
+            } else {
+                manageTopicSubscriptionUseCase.unsubscribe()
+            }
+
+            if (isSuccess){
+                _uiState.update { it.copy(notificationEnabled = enabled) }
+            }
         }
     }
 

@@ -60,7 +60,14 @@ fun SensorCard(
 }
 
 @Composable
-fun TankLevelsCard(modifier: Modifier = Modifier) {
+fun TankLevelsCard(
+    mainLevel: Float, maxMainLevel: Float,
+    aLevel: Float, maxALevel: Float,
+    bLevel: Float, maxBLevel: Float,
+    phUpLevel: Float, maxPhUpLevel: Float,
+    phDownLevel: Float, maxPhDownLevel: Float,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -76,18 +83,18 @@ fun TankLevelsCard(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            TankLevelItem(name = "Nutrisi A", level = 4)
-            TankLevelItem(name = "Nutrisi B", level = 3)
-            TankLevelItem(name = "pH-Up", level = 5)
-            TankLevelItem(name = "pH-Down", level = 2)
-            TankLevelItem(name = "Main Tank", level = 5)
+            TankLevelItem(name = "Nutrisi A", level = aLevel, max = maxALevel)
+            TankLevelItem(name = "Nutrisi B", level = bLevel, max = maxBLevel)
+            TankLevelItem(name = "pH-Up", level = phUpLevel, max = maxPhUpLevel)
+            TankLevelItem(name = "pH-Down", level = phDownLevel, max = maxPhDownLevel)
+            TankLevelItem(name = "Tangki Utama", level = mainLevel, max = maxMainLevel)
         }
     }
 }
 
 @Composable
-fun TankLevelItem(name: String, level: Int, modifier: Modifier = Modifier) {
-    val currentLevel = level.coerceIn(1, 5)
+fun TankLevelItem(name: String, level: Float, max: Float, modifier: Modifier = Modifier) {
+    val currentLevel = level.coerceIn(0f, max)
 
     Column(
         modifier = modifier
@@ -100,11 +107,11 @@ fun TankLevelItem(name: String, level: Int, modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(name, style = MaterialTheme.typography.bodyLarge)
-            Text("$currentLevel / 5", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+            Text("$currentLevel / $max", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.height(4.dp))
         LinearProgressIndicator(
-            progress = (currentLevel / 5f),
+            progress = (currentLevel / max),
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -117,13 +124,6 @@ fun ActionButtonCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val icon = when (text) {
-        "Add\nNutrition" -> Icons.Filled.AddCircle
-        "Add\npH-Up" -> Icons.Filled.AddCircle
-        "Add\npH-Down" -> Icons.Filled.AddCircle
-        else -> Icons.Filled.AddCircle
-    }
-
     Card(
         onClick = onClick,
         modifier = modifier,
@@ -137,7 +137,7 @@ fun ActionButtonCard(
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = icon,
+                imageVector = Icons.Filled.AddCircle,
                 contentDescription = text,
                 modifier = Modifier.size(32.dp)
             )

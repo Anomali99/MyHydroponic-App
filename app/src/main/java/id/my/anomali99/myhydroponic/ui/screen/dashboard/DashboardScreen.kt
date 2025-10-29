@@ -9,11 +9,16 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import id.my.anomali99.myhydroponic.ui.components.ActionButtonCard
@@ -25,7 +30,24 @@ import id.my.anomali99.myhydroponic.ui.theme.MyHydroponicTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun DashboardScreen(navController: NavController) {
+fun DashboardScreen(
+    navController: NavController,
+    viewModel: DashboardViewModel = hiltViewModel()
+){
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
+            snackbarHostState.showSnackbar(
+                message = it,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.dismissError()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -72,12 +94,12 @@ fun DashboardScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Data diambil: 12:30 PM",
+                            text = "Data diambil:\n${uiState.datetime}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Button(
-                            onClick = { /* TODO: Aksi refresh ViewModel */ },
+                            onClick = viewModel::onRefreshClicked,
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Icon(Icons.Filled.Refresh, contentDescription = "Refresh", modifier = Modifier.size(18.dp))
@@ -95,13 +117,12 @@ fun DashboardScreen(navController: NavController) {
                     ) {
                         SensorCard(
                             title = "pH",
-                            value = "6.8",
+                            value = uiState.ph,
                             modifier = Modifier.weight(1f)
                         )
-                        // Card TDS
                         SensorCard(
                             title = "TDS",
-                            value = "850",
+                            value = uiState.tds,
                             unit = "ppm",
                             modifier = Modifier.weight(1f)
                         )
@@ -109,7 +130,18 @@ fun DashboardScreen(navController: NavController) {
 
                     Spacer(Modifier.height(16.dp))
 
-                    TankLevelsCard()
+                    TankLevelsCard(
+                        aLevel = uiState.aTank,
+                        maxALevel = 20f,
+                        bLevel = uiState.bTank,
+                        maxBLevel = 20f,
+                        phUpLevel = uiState.phUpTank,
+                        maxPhUpLevel = 20f,
+                        phDownLevel = uiState.phDownTank,
+                        maxPhDownLevel = 20f,
+                        mainLevel = uiState.mainTank,
+                        maxMainLevel = 20f
+                    )
 
                     Spacer(Modifier.height(16.dp))
 
@@ -123,18 +155,18 @@ fun DashboardScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         ActionButtonCard(
-                            text = "Add\nNutrition",
-                            onClick = { /* TODO: Panggil ViewModel add nutrition */ },
+                            text = "Tambah\nNutrisi",
+                            onClick = viewModel::onAddNutritionClicked,
                             modifier = Modifier.weight(1f)
                         )
                         ActionButtonCard(
-                            text = "Add\npH-Up",
-                            onClick = { /* TODO: Panggil ViewModel add pH-Up */ },
+                            text = "Tambah\npH-Up",
+                            onClick = viewModel::onAddPhUpClicked,
                             modifier = Modifier.weight(1f)
                         )
                         ActionButtonCard(
-                            text = "Add\npH-Down",
-                            onClick = { /* TODO: Panggil ViewModel add pH-Down */ },
+                            text = "Tambah\npH-Down",
+                            onClick = viewModel::onAddPhDownClicked,
                             modifier = Modifier.weight(1f)
                         )
                     }

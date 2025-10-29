@@ -1,0 +1,180 @@
+package id.my.anomali99.myhydroponic.ui.screen.dashboard
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import id.my.anomali99.myhydroponic.domain.usecase.SendToMqttTopicUseCase
+import id.my.anomali99.myhydroponic.domain.usecase.StartMqttConnectionUseCase
+import id.my.anomali99.myhydroponic.domain.usecase.SubscribeToMqttDataUseCase
+import id.my.anomali99.myhydroponic.utils.Constants
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+data class DashboardUiState(
+    val isLoading: Boolean = false,
+    val isMqttConnected: Boolean = false,
+    val ph: String = "0.0",
+    val tds: String = "0",
+    val mainTank: Float = 0f,
+    val aTank: Float = 0f,
+    val bTank: Float = 0f,
+    val phUpTank: Float = 0f,
+    val phDownTank: Float = 0f,
+    val datetime: String = "01 Januari 2001\n00:00 WIB",
+    val errorMessage: String? = null
+)
+
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
+    private val startMqttConnectionUseCase: StartMqttConnectionUseCase,
+    private val subscribeToMqttDataUseCase: SubscribeToMqttDataUseCase,
+    private val sendToMqttTopicUseCase: SendToMqttTopicUseCase
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(DashboardUiState())
+    val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
+
+    init {
+        startMqttConnection()
+        collectMqttData()
+    }
+
+    private fun startMqttConnection() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                startMqttConnectionUseCase()
+                _uiState.update { it.copy(isMqttConnected = true) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.update {
+                    it.copy(
+                        isMqttConnected = false,
+                        errorMessage = "Koneksi MQTT gagal: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun collectMqttData() {
+        viewModelScope.launch {
+            subscribeToMqttDataUseCase()
+                .catch { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Error data stream: ${e.message}"
+                        )
+                    }
+                }
+                .collect { newData ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            ph = newData.ph.toString(),
+                            tds = newData.tds.toInt().toString(),
+                            mainTank = newData.mainTank,
+                            phUpTank = newData.phUpTank,
+                            phDownTank = newData.phDownTank,
+                            aTank = newData.aTank,
+                            bTank = newData.bTank,
+                            datetime = parseDatetime(newData.datetime)
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun parseDatetime(inputString: String): String {
+        val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val localDateTime = LocalDateTime.parse(inputString, inputFormatter)
+
+        val wibZoneId = ZoneId.of("Asia/Jakarta")
+        val zonedDateTime = localDateTime.atZone(wibZoneId)
+
+        val indonesiaLocale = Locale("id", "ID")
+        val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy\nHH:mm z", indonesiaLocale)
+
+        return zonedDateTime.format(outputFormatter)
+    }
+
+    fun onRefreshClicked(){
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            try {
+                sendToMqttTopicUseCase(
+                    Constants.ENV_REFRESH,
+                    command = "{ \"status\": true, \"url\": null }"
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Gagal mengirim perintah: ${e.message}") }
+            }
+        }
+    }
+
+    fun onAddNutritionClicked(){
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            try {
+                sendToMqttTopicUseCase(
+                    Constants.PUMP_MANUALLY,
+                    command = "{ \"pump\": \"NUTRITION\"}"
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.update { it.copy(errorMessage = "Gagal mengirim perintah: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun onAddPhUpClicked(){
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            try {
+                sendToMqttTopicUseCase(
+                    Constants.PUMP_MANUALLY,
+                    command = "{ \"pump\": \"PH_UP\"}"
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.update { it.copy(errorMessage = "Gagal mengirim perintah: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun onAddPhDownClicked(){
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            try {
+                sendToMqttTopicUseCase(
+                    Constants.PUMP_MANUALLY,
+                    command = "{ \"pump\": \"PH_DOWN\"}"
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.update { it.copy(errorMessage = "Gagal mengirim perintah: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun dismissError() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
+
+}
