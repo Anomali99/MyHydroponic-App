@@ -32,6 +32,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import id.my.anomali99.myhydroponic.ui.theme.MyHydroponicTheme
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -41,8 +48,36 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
 
+    val context = LocalContext.current
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted: Boolean ->
+            if (isGranted) {
+                viewModel.onNotificationEnabledChanged(true)
+            }
+        }
+    )
+
+    val smartOnCheckedChange = { newCheckedState: Boolean ->
+        if (newCheckedState) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val permission = Manifest.permission.POST_NOTIFICATIONS
+                if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
+                    viewModel.onNotificationEnabledChanged(true)
+                } else {
+                    permissionLauncher.launch(permission)
+                }
+            } else {
+                viewModel.onNotificationEnabledChanged(true)
+            }
+        } else {
+            viewModel.onNotificationEnabledChanged(false)
+        }
+    }
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
@@ -98,7 +133,7 @@ fun SettingsScreen(
 
                 NotificationSettingsCard(
                     notificationEnabled = uiState.notificationEnabled,
-                    onCheckedChange = viewModel::onNotificationEnabledChanged,
+                    onCheckedChange = smartOnCheckedChange,
                     enabled = !uiState.isLoading
                 )
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import id.my.anomali99.myhydroponic.data.model.ThresholdModel
 import id.my.anomali99.myhydroponic.domain.usecase.GetThresholdUseCase
+import id.my.anomali99.myhydroponic.domain.usecase.ManageTopicSubscriptionUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.UpdateThresholdUseCase
 import id.my.anomali99.myhydroponic.utils.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +32,8 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val getThresholdsUseCase: GetThresholdUseCase,
-    private val updateThresholdsUseCase: UpdateThresholdUseCase
+    private val updateThresholdsUseCase: UpdateThresholdUseCase,
+    private val manageTopicSubscriptionUseCase: ManageTopicSubscriptionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -68,10 +70,33 @@ class SettingsViewModel @Inject constructor(
                 }
             }
         }.launchIn(viewModelScope)
+
+        viewModelScope.launch {
+            val isSubscribed = manageTopicSubscriptionUseCase.isSubscribe()
+            _uiState.update {
+                it.copy(notificationEnabled = isSubscribed)
+            }
+        }
+    }
+
+    suspend fun changeNotificationHandle(enabled: Boolean) {
+        var isSuccess = false
+
+        if (enabled){
+            isSuccess = manageTopicSubscriptionUseCase.subscribe()
+        } else {
+            isSuccess = manageTopicSubscriptionUseCase.unsubscribe()
+        }
+
+        if (isSuccess){
+            _uiState.update { it.copy(notificationEnabled = enabled) }
+        }
     }
 
     fun onNotificationEnabledChanged(enabled: Boolean) {
-        _uiState.update { it.copy(notificationEnabled = enabled) }
+        viewModelScope.launch {
+            changeNotificationHandle(enabled)
+        }
     }
 
     fun onThresholdEnabledChanged(enabled: Boolean) {
