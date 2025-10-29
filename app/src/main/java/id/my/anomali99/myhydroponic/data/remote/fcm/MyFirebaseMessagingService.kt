@@ -8,13 +8,14 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
-import id.my.anomali99.myhydroponic.domain.repository.MainRepository
-import id.my.anomali99.myhydroponic.R
+import kotlin.random.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.random.Random
+
+import id.my.anomali99.myhydroponic.R
+import id.my.anomali99.myhydroponic.domain.repository.MainRepository
 
 @AndroidEntryPoint
 class MyFirebaseMessagingService: FirebaseMessagingService() {

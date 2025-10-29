@@ -3,11 +3,6 @@ package id.my.anomali99.myhydroponic.ui.screen.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import id.my.anomali99.myhydroponic.data.model.ThresholdModel
-import id.my.anomali99.myhydroponic.domain.usecase.GetThresholdUseCase
-import id.my.anomali99.myhydroponic.domain.usecase.ManageTopicSubscriptionUseCase
-import id.my.anomali99.myhydroponic.domain.usecase.UpdateThresholdUseCase
-import id.my.anomali99.myhydroponic.utils.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +11,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+import id.my.anomali99.myhydroponic.data.model.ThresholdModel
+import id.my.anomali99.myhydroponic.domain.usecase.GetThresholdUseCase
+import id.my.anomali99.myhydroponic.domain.usecase.ManageTopicSubscriptionUseCase
+import id.my.anomali99.myhydroponic.domain.usecase.UpdateThresholdUseCase
+import id.my.anomali99.myhydroponic.utils.Resource
 
 data class SettingsUiState(
     val isLoading: Boolean = false,

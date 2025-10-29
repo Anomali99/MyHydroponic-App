@@ -1,10 +1,11 @@
 package id.my.anomali99.myhydroponic.domain.usecase
 
 import android.util.Log
-import id.my.anomali99.myhydroponic.domain.repository.MainRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
+
+import id.my.anomali99.myhydroponic.domain.repository.MainRepository
 
 class ManageTopicSubscriptionUseCase @Inject constructor(
     private val repository: MainRepository

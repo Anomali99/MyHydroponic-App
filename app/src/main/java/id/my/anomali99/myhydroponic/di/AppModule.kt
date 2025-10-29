@@ -1,30 +1,31 @@
 package id.my.anomali99.myhydroponic.di
 
 import android.content.Context
+import com.google.gson.Gson
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Singleton
+
 import id.my.anomali99.myhydroponic.data.local.datastore.SettingsDataStore
 import id.my.anomali99.myhydroponic.data.remote.api.ApiService
 import id.my.anomali99.myhydroponic.data.remote.fcm.FcmManager
+import id.my.anomali99.myhydroponic.data.remote.mqtt.MqttClientWrapper
 import id.my.anomali99.myhydroponic.data.repository.MainRepositoryImpl
 import id.my.anomali99.myhydroponic.data.repository.SettingsRepositoryImpl
+import id.my.anomali99.myhydroponic.data.repository.MqttRepositoryImpl
+import id.my.anomali99.myhydroponic.domain.repository.MqttRepository
 import id.my.anomali99.myhydroponic.domain.repository.MainRepository
 import id.my.anomali99.myhydroponic.domain.repository.SettingsRepository
 import id.my.anomali99.myhydroponic.domain.usecase.GetThresholdUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.ManageTopicSubscriptionUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.UpdateThresholdUseCase
 import id.my.anomali99.myhydroponic.utils.Constants
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Singleton
-import com.google.gson.Gson
-import id.my.anomali99.myhydroponic.data.remote.mqtt.MqttClientWrapper
-import id.my.anomali99.myhydroponic.data.repository.MqttRepositoryImpl
-import id.my.anomali99.myhydroponic.domain.repository.MqttRepository
 
 @Module
 @InstallIn(SingletonComponent::class)

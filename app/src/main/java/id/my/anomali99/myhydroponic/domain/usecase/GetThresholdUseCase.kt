@@ -1,7 +1,8 @@
 package id.my.anomali99.myhydroponic.domain.usecase
 
-import id.my.anomali99.myhydroponic.domain.repository.SettingsRepository
 import javax.inject.Inject
+
+import id.my.anomali99.myhydroponic.domain.repository.SettingsRepository
 
 class GetThresholdUseCase @Inject constructor(
     private val repository: SettingsRepository

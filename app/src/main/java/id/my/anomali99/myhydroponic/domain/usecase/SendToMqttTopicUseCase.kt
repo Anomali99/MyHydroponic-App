@@ -1,7 +1,8 @@
 package id.my.anomali99.myhydroponic.domain.usecase
 
-import id.my.anomali99.myhydroponic.domain.repository.MqttRepository
 import javax.inject.Inject
+
+import id.my.anomali99.myhydroponic.domain.repository.MqttRepository
 
 class SendToMqttTopicUseCase @Inject constructor(
     private val mqttRepository: MqttRepository
