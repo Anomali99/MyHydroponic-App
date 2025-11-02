@@ -15,6 +15,7 @@ import javax.inject.Inject
 import id.my.anomali99.myhydroponic.data.model.ThresholdModel
 import id.my.anomali99.myhydroponic.domain.usecase.GetThresholdUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.ManageTopicSubscriptionUseCase
+import id.my.anomali99.myhydroponic.domain.usecase.ManageSettingsDataUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.UpdateThresholdUseCase
 import id.my.anomali99.myhydroponic.utils.Resource
 
@@ -26,21 +27,38 @@ data class SettingsUiState(
     val phMax: String = "7.0",
     val tdsMin: String = "800",
     val tdsMax: String = "1200",
+    val duration: String = "1.0",
+    val maxMain: String = "20.0",
+    val maxNutrientA: String = "20.0",
+    val maxNutrientB: String = "20.0",
+    val maxPhUp: String = "20.0",
+    val maxPhDown: String = "20.0",
     val errorMessage: String? = null,
     val saveSuccess: Boolean = false
+)
+
+data class OtherModel(
+    val duration: String,
+    val maxMain: String,
+    val maxNutrientA: String,
+    val maxNutrientB: String,
+    val maxPhUp: String,
+    val maxPhDown: String
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val getThresholdsUseCase: GetThresholdUseCase,
     private val updateThresholdsUseCase: UpdateThresholdUseCase,
-    private val manageTopicSubscriptionUseCase: ManageTopicSubscriptionUseCase
+    private val manageTopicSubscriptionUseCase: ManageTopicSubscriptionUseCase,
+    private val manageSettingsDataUseCase: ManageSettingsDataUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     private var originalSettings: ThresholdModel? = null
+    private var originalOtherSettings: OtherModel? = null
 
     init {
         loadSettings()
@@ -74,12 +92,35 @@ class SettingsViewModel @Inject constructor(
 
         viewModelScope.launch {
             val isSubscribed = manageTopicSubscriptionUseCase.isSubscribe()
+            val duration = manageSettingsDataUseCase.getDuration().toString()
+            val maxMain = manageSettingsDataUseCase.getMaxMain().toString()
+            val maxNutrientA = manageSettingsDataUseCase.getMaxNutrientA().toString()
+            val maxNutrientB = manageSettingsDataUseCase.getMaxNutrientB().toString()
+            val maxPhUp = manageSettingsDataUseCase.getMaxPhUp().toString()
+            val maxPhDown = manageSettingsDataUseCase.getMaxPhDown().toString()
+
             _uiState.update {
-                it.copy(notificationEnabled = isSubscribed)
+                it.copy(
+                    notificationEnabled = isSubscribed,
+                    duration = duration,
+                    maxMain = maxMain,
+                    maxPhUp = maxPhUp,
+                    maxPhDown = maxPhDown,
+                    maxNutrientA = maxNutrientA,
+                    maxNutrientB = maxNutrientB
+                )
             }
+
+            originalOtherSettings = OtherModel(
+                duration = duration,
+                maxMain = maxMain,
+                maxPhUp = maxPhUp,
+                maxPhDown = maxPhDown,
+                maxNutrientA = maxNutrientA,
+                maxNutrientB = maxNutrientB
+            )
         }
     }
-
 
     fun onNotificationEnabledChanged(enabled: Boolean) {
         viewModelScope.launch {
@@ -117,6 +158,29 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(tdsMax = value) }
     }
 
+    fun onDurationChanged(value: String) {
+        _uiState.update { it.copy(duration = value) }
+    }
+
+    fun onMaxMainChanged(value: String) {
+        _uiState.update { it.copy(maxMain = value) }
+    }
+
+    fun onMaxNutrientAChanged(value: String) {
+        _uiState.update { it.copy(maxNutrientA = value) }
+    }
+
+    fun onMaxNutrientBChanged(value: String) {
+        _uiState.update { it.copy(maxNutrientB = value) }
+    }
+
+    fun onMaxPhUpChanged(value: String) {
+        _uiState.update { it.copy(maxPhUp = value) }
+    }
+
+    fun onMaxPhDownChanged(value: String) {
+        _uiState.update { it.copy(maxPhDown = value) }
+    }
 
     fun onSaveClicked() {
         viewModelScope.launch {
@@ -164,6 +228,60 @@ class SettingsViewModel @Inject constructor(
                     tdsMax = settings.tdsMax,
                     errorMessage = null,
                     saveSuccess = false
+                )
+            }
+        }
+    }
+
+    fun onSaveOtherClicked() {
+        viewModelScope.launch {
+            originalOtherSettings = OtherModel(
+                duration = _uiState.value.duration,
+                maxMain = _uiState.value.maxMain,
+                maxPhUp = _uiState.value.maxPhUp,
+                maxPhDown = _uiState.value.maxPhDown,
+                maxNutrientA = _uiState.value.maxNutrientA,
+                maxNutrientB = _uiState.value.maxNutrientB
+            )
+
+            manageSettingsDataUseCase.setDuration(_uiState.value.duration.toFloat())
+            manageSettingsDataUseCase.setMaxMain(_uiState.value.maxMain.toFloat())
+            manageSettingsDataUseCase.setMaxPhUp(_uiState.value.maxPhUp.toFloat())
+            manageSettingsDataUseCase.setMaxPhDown(_uiState.value.maxPhDown.toFloat())
+            manageSettingsDataUseCase.setMaxNutrientA(_uiState.value.maxNutrientA.toFloat())
+            manageSettingsDataUseCase.setMaxNutrientB(_uiState.value.maxNutrientB.toFloat())
+
+            val duration = manageSettingsDataUseCase.getDuration().toString()
+            val maxMain = manageSettingsDataUseCase.getMaxMain().toString()
+            val maxNutrientA = manageSettingsDataUseCase.getMaxNutrientA().toString()
+            val maxNutrientB = manageSettingsDataUseCase.getMaxNutrientB().toString()
+            val maxPhUp = manageSettingsDataUseCase.getMaxPhUp().toString()
+            val maxPhDown = manageSettingsDataUseCase.getMaxPhDown().toString()
+
+            _uiState.update {
+                it.copy(
+                    saveSuccess = true,
+                    duration = duration,
+                    maxMain = maxMain,
+                    maxPhUp = maxPhUp,
+                    maxPhDown = maxPhDown,
+                    maxNutrientA = maxNutrientA,
+                    maxNutrientB = maxNutrientB
+                )
+            }
+        }
+    }
+
+    fun onCancelOtherClicked() {
+        originalOtherSettings?.let { settings ->
+            _uiState.update {
+                it.copy(
+                    duration = settings.duration,
+                    maxMain = settings.maxMain,
+                    maxNutrientA = settings.maxNutrientA,
+                    maxNutrientB = settings.maxNutrientB,
+                    maxPhUp = settings.maxPhUp,
+                    maxPhDown = settings.maxPhDown
                 )
             }
         }

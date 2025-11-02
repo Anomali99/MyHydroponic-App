@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
+import id.my.anomali99.myhydroponic.domain.usecase.ManageSettingsDataUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.SendToMqttTopicUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.StartMqttConnectionUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.SubscribeToMqttDataUseCase
@@ -32,6 +33,12 @@ data class DashboardUiState(
     val phUpTank: Float = 0f,
     val phDownTank: Float = 0f,
     val datetime: String = "01 Januari 2001\n00:00 WIB",
+    val duration: Float = 1f,
+    val maxMain: Float = 20f,
+    val maxNutrientA: Float = 20f,
+    val maxNutrientB: Float = 20f,
+    val maxPhUp: Float = 20f,
+    val maxPhDown: Float = 20f,
     val errorMessage: String? = null
 )
 
@@ -39,7 +46,8 @@ data class DashboardUiState(
 class DashboardViewModel @Inject constructor(
     private val startMqttConnectionUseCase: StartMqttConnectionUseCase,
     private val subscribeToMqttDataUseCase: SubscribeToMqttDataUseCase,
-    private val sendToMqttTopicUseCase: SendToMqttTopicUseCase
+    private val sendToMqttTopicUseCase: SendToMqttTopicUseCase,
+    private val manageSettingsDataUseCase: ManageSettingsDataUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
@@ -47,6 +55,28 @@ class DashboardViewModel @Inject constructor(
     init {
         startMqttConnection()
         collectMqttData()
+    }
+
+    fun loadSettings() {
+        viewModelScope.launch {
+            val duration = manageSettingsDataUseCase.getDuration()
+            val maxMain = manageSettingsDataUseCase.getMaxMain()
+            val maxNutrientA = manageSettingsDataUseCase.getMaxNutrientA()
+            val maxNutrientB = manageSettingsDataUseCase.getMaxNutrientB()
+            val maxPhUp = manageSettingsDataUseCase.getMaxPhUp()
+            val maxPhDown = manageSettingsDataUseCase.getMaxPhDown()
+
+            _uiState.update {
+                it.copy(
+                    duration = duration,
+                    maxMain = maxMain,
+                    maxPhUp = maxPhUp,
+                    maxPhDown = maxPhDown,
+                    maxNutrientA = maxNutrientA,
+                    maxNutrientB = maxNutrientB
+                )
+            }
+        }
     }
 
     private fun startMqttConnection() {
@@ -129,7 +159,7 @@ class DashboardViewModel @Inject constructor(
             try {
                 sendToMqttTopicUseCase(
                     Constants.PUMP_MANUALLY,
-                    command = "{ \"pump\": \"NUTRITION\"}"
+                    command = "{ \"pump\": \"NUTRITION\", \"duration\": ${_uiState.value.duration}}"
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -146,7 +176,7 @@ class DashboardViewModel @Inject constructor(
             try {
                 sendToMqttTopicUseCase(
                     Constants.PUMP_MANUALLY,
-                    command = "{ \"pump\": \"PH_UP\"}"
+                    command = "{ \"pump\": \"PH_UP\", \"duration\": ${_uiState.value.duration}}"
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -163,7 +193,7 @@ class DashboardViewModel @Inject constructor(
             try {
                 sendToMqttTopicUseCase(
                     Constants.PUMP_MANUALLY,
-                    command = "{ \"pump\": \"PH_DOWN\"}"
+                    command = "{ \"pump\": \"PH_DOWN\", \"duration\": ${_uiState.value.duration}}"
                 )
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -38,6 +40,10 @@ fun DashboardScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.loadSettings()
+    }
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
@@ -133,15 +139,15 @@ fun DashboardScreen(
 
                     TankLevelsCard(
                         aLevel = uiState.aTank,
-                        maxALevel = 20f,
+                        maxALevel = uiState.maxNutrientA,
                         bLevel = uiState.bTank,
-                        maxBLevel = 20f,
+                        maxBLevel = uiState.maxNutrientB,
                         phUpLevel = uiState.phUpTank,
-                        maxPhUpLevel = 20f,
+                        maxPhUpLevel = uiState.maxPhUp,
                         phDownLevel = uiState.phDownTank,
-                        maxPhDownLevel = 20f,
+                        maxPhDownLevel = uiState.maxPhDown,
                         mainLevel = uiState.mainTank,
-                        maxMainLevel = 20f
+                        maxMainLevel = uiState.maxMain
                     )
 
                     Spacer(Modifier.height(16.dp))
