@@ -10,6 +10,8 @@ interface MqttRepository {
 
     fun getMqttDataFlow(): Flow<EnvironmentModel>
 
+    fun getDeviceStatus(): Flow<Boolean>
+
     suspend fun sendMqttCommand(topic: String, message: String)
 
     fun disconnect()

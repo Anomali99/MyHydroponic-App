@@ -47,7 +47,7 @@ class MqttClientWrapper @Inject constructor(
     }
 
 
-    fun connect(serverUri: String, clientId: String) {
+    fun connect(serverUri: String, clientId: String, username: String, password: String) {
         if (client?.isConnected == true) return
 
         try {
@@ -56,10 +56,12 @@ class MqttClientWrapper @Inject constructor(
             client?.setCallback(mqttCallback)
 
             val options = MqttConnectOptions().apply {
-                isAutomaticReconnect = true
-                isCleanSession = true
-                connectionTimeout = 10
-                keepAliveInterval = 60
+                this.userName = username
+                this.password = password.toCharArray()
+                this.isAutomaticReconnect = true
+                this.isCleanSession = true
+                this.connectionTimeout = 10
+                this.keepAliveInterval = 60
             }
 
             client?.connect(options)

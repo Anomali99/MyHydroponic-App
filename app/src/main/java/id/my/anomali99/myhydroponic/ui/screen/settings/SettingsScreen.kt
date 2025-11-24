@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -99,7 +101,12 @@ fun SettingsScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = {
+                    Text(
+                        "Pengaturan",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
@@ -107,7 +114,7 @@ fun SettingsScreen(
                 ),
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 }
             )
@@ -117,11 +124,12 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -152,18 +160,9 @@ fun SettingsScreen(
                 OtherSettingsCard(
                     duration = uiState.duration,
                     onDurationChange = viewModel::onDurationChanged,
-                    maxMain = uiState.maxMain,
-                    onMaxMainChange = viewModel::onMaxMainChanged,
-                    maxNutrientA = uiState.maxNutrientA,
-                    onMaxNutrientAChange = viewModel::onMaxNutrientAChanged,
-                    maxNutrientB = uiState.maxNutrientB,
-                    onMaxNutrientBChange = viewModel::onMaxNutrientBChanged,
-                    maxPhUp = uiState.maxPhUp,
-                    onMaxPhUpChange = viewModel::onMaxPhUpChanged,
-                    maxPhDown = uiState.maxPhDown,
-                    onMaxPhDownChange = viewModel::onMaxPhDownChanged,
                     onSaveClick = viewModel::onSaveOtherClicked,
-                    onCancelClick = viewModel::onCancelOtherClicked
+                    onCancelClick = viewModel::onCancelOtherClicked,
+                    enabled = !uiState.isLoading
                 )
             }
 

@@ -1,18 +1,17 @@
 package id.my.anomali99.myhydroponic.ui.screen.dashboard
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 
 import id.my.anomali99.myhydroponic.ui.components.ActionButtonCard
 import id.my.anomali99.myhydroponic.ui.components.SensorCard
+import id.my.anomali99.myhydroponic.ui.components.StatusHeader
 import id.my.anomali99.myhydroponic.ui.components.TankLevelsCard
 import id.my.anomali99.myhydroponic.ui.navigation.Screen
 import id.my.anomali99.myhydroponic.ui.theme.MyHydroponicTheme
@@ -56,12 +56,13 @@ fun DashboardScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "MyHydroponic",
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.SemiBold
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -71,7 +72,7 @@ fun DashboardScreen(
                 ),
                 actions = {
                     IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
-                        Icon(Icons.Filled.Settings, contentDescription = "Settings")
+                        Icon(Icons.Filled.Settings, contentDescription = "Pengaturan")
                     }
                 }
             )
@@ -81,104 +82,85 @@ fun DashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(8.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
                 .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(
+
+            StatusHeader(
+                isOnline = uiState.deviceIsActive,
+                datetime = uiState.datetime,
+                onRefresh = viewModel::onRefreshClicked
+            )
+
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Data diambil:\n${uiState.datetime}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Button(
-                            onClick = viewModel::onRefreshClicked,
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Icon(Icons.Filled.Refresh, contentDescription = "Refresh", modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("Refresh")
-                        }
-                    }
-
-                    Divider()
-                    Spacer(Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        SensorCard(
-                            title = "pH",
-                            value = uiState.ph,
-                            modifier = Modifier.weight(1f)
-                        )
-                        SensorCard(
-                            title = "TDS",
-                            value = uiState.tds,
-                            unit = "ppm",
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-
-                    TankLevelsCard(
-                        aLevel = uiState.aTank,
-                        maxALevel = uiState.maxNutrientA,
-                        bLevel = uiState.bTank,
-                        maxBLevel = uiState.maxNutrientB,
-                        phUpLevel = uiState.phUpTank,
-                        maxPhUpLevel = uiState.maxPhUp,
-                        phDownLevel = uiState.phDownTank,
-                        maxPhDownLevel = uiState.maxPhDown,
-                        mainLevel = uiState.mainTank,
-                        maxMainLevel = uiState.maxMain
+                    SensorCard(
+                        title = "pH Air",
+                        value = uiState.ph,
+                        unit = null,
+                        modifier = Modifier.weight(1f)
                     )
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Text(
-                        "Kontrol Manual",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                    SensorCard(
+                        title = "TDS",
+                        value = uiState.tds,
+                        unit = "ppm",
+                        modifier = Modifier.weight(1f)
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        ActionButtonCard(
-                            text = "Tambah\nNutrisi",
-                            onClick = viewModel::onAddNutritionClicked,
-                            modifier = Modifier.weight(1f)
-                        )
-                        ActionButtonCard(
-                            text = "Tambah\npH-Up",
-                            onClick = viewModel::onAddPhUpClicked,
-                            modifier = Modifier.weight(1f)
-                        )
-                        ActionButtonCard(
-                            text = "Tambah\npH-Down",
-                            onClick = viewModel::onAddPhDownClicked,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                }
+
+                SensorCard(
+                    title = "Suhu Air",
+                    value = uiState.temp,
+                    unit = "°C",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            TankLevelsCard(
+                mainLevel = uiState.mainTank,
+                aLevel = uiState.aTank,
+                bLevel = uiState.bTank,
+                phUpLevel = uiState.phUpTank,
+                phDownLevel = uiState.phDownTank
+            )
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    "Kontrol Manual",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    ActionButtonCard(
+                        text = "Tambah\nNutrisi",
+                        onClick = viewModel::onAddNutritionClicked,
+                        modifier = Modifier.weight(1f)
+                    )
+                    ActionButtonCard(
+                        text = "Tambah\npH-Up",
+                        onClick = viewModel::onAddPhUpClicked,
+                        modifier = Modifier.weight(1f)
+                    )
+                    ActionButtonCard(
+                        text = "Tambah\npH-Down",
+                        onClick = viewModel::onAddPhDownClicked,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
+            Spacer(Modifier.height(8.dp))
         }
     }
 }

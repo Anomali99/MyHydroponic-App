@@ -9,6 +9,9 @@ data class EnvironmentModel(
     @SerializedName("tds")
     val tds: Float,
 
+    @SerializedName("temp")
+    val temp: Float,
+
     @SerializedName("tank_main")
     val mainTank: Float,
 

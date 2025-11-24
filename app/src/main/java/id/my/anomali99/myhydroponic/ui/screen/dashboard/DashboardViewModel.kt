@@ -20,25 +20,23 @@ import id.my.anomali99.myhydroponic.domain.usecase.ManageSettingsDataUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.SendToMqttTopicUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.StartMqttConnectionUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.SubscribeToMqttDataUseCase
+import id.my.anomali99.myhydroponic.domain.usecase.SubscribeToMqttDeviceUseCase
 import id.my.anomali99.myhydroponic.utils.Constants
 
 data class DashboardUiState(
     val isLoading: Boolean = false,
     val isMqttConnected: Boolean = false,
+    val deviceIsActive: Boolean = false,
     val ph: String = "0.0",
     val tds: String = "0",
+    val temp: String = "0.0",
     val mainTank: Float = 0f,
     val aTank: Float = 0f,
     val bTank: Float = 0f,
     val phUpTank: Float = 0f,
     val phDownTank: Float = 0f,
-    val datetime: String = "01 Januari 2001\n00:00 WIB",
+    val datetime: String = "01 Januari 2001 00:00 WIB",
     val duration: Float = 1f,
-    val maxMain: Float = 20f,
-    val maxNutrientA: Float = 20f,
-    val maxNutrientB: Float = 20f,
-    val maxPhUp: Float = 20f,
-    val maxPhDown: Float = 20f,
     val errorMessage: String? = null
 )
 
@@ -46,6 +44,7 @@ data class DashboardUiState(
 class DashboardViewModel @Inject constructor(
     private val startMqttConnectionUseCase: StartMqttConnectionUseCase,
     private val subscribeToMqttDataUseCase: SubscribeToMqttDataUseCase,
+    private val subscribeToMqttDeviceUseCase: SubscribeToMqttDeviceUseCase,
     private val sendToMqttTopicUseCase: SendToMqttTopicUseCase,
     private val manageSettingsDataUseCase: ManageSettingsDataUseCase
 ) : ViewModel() {
@@ -60,20 +59,10 @@ class DashboardViewModel @Inject constructor(
     fun loadSettings() {
         viewModelScope.launch {
             val duration = manageSettingsDataUseCase.getDuration()
-            val maxMain = manageSettingsDataUseCase.getMaxMain()
-            val maxNutrientA = manageSettingsDataUseCase.getMaxNutrientA()
-            val maxNutrientB = manageSettingsDataUseCase.getMaxNutrientB()
-            val maxPhUp = manageSettingsDataUseCase.getMaxPhUp()
-            val maxPhDown = manageSettingsDataUseCase.getMaxPhDown()
 
             _uiState.update {
                 it.copy(
-                    duration = duration,
-                    maxMain = maxMain,
-                    maxPhUp = maxPhUp,
-                    maxPhDown = maxPhDown,
-                    maxNutrientA = maxNutrientA,
-                    maxNutrientB = maxNutrientB
+                    duration = duration
                 )
             }
         }
@@ -113,12 +102,31 @@ class DashboardViewModel @Inject constructor(
                             isLoading = false,
                             ph = newData.ph.toString(),
                             tds = newData.tds.toInt().toString(),
+                            temp = newData.temp.toString(),
                             mainTank = newData.mainTank,
                             phUpTank = newData.phUpTank,
                             phDownTank = newData.phDownTank,
                             aTank = newData.aTank,
                             bTank = newData.bTank,
                             datetime = parseDatetime(newData.datetime)
+                        )
+                    }
+                }
+
+            subscribeToMqttDeviceUseCase()
+                .catch { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Error data stream: ${e.message}"
+                        )
+                    }
+                }
+                .collect { status ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            deviceIsActive = status
                         )
                     }
                 }
@@ -133,7 +141,7 @@ class DashboardViewModel @Inject constructor(
         val zonedDateTime = localDateTime.atZone(wibZoneId)
 
         val indonesiaLocale = Locale("id", "ID")
-        val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy\nHH:mm z", indonesiaLocale)
+        val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm z", indonesiaLocale)
 
         return zonedDateTime.format(outputFormatter)
     }

@@ -26,94 +26,42 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OtherSettingsCard(
     duration: String, onDurationChange: (String) -> Unit,
-    maxMain: String, onMaxMainChange: (String) -> Unit,
-    maxNutrientA: String, onMaxNutrientAChange: (String) -> Unit,
-    maxNutrientB: String, onMaxNutrientBChange: (String) -> Unit,
-    maxPhUp: String, onMaxPhUpChange: (String) -> Unit,
-    maxPhDown: String, onMaxPhDownChange: (String) -> Unit,
     onSaveClick: () -> Unit,
-    onCancelClick: () -> Unit
+    onCancelClick: () -> Unit,
+    enabled: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.medium
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
             Text(
-                text = "Pengaturan Lainya",
+                text = "Pengaturan Lainnya",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp)
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            Divider(modifier = Modifier.padding(vertical = 4.dp))
+
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = duration,
                 onValueChange = onDurationChange,
-                label = { Text("Durasi Aktivasi Pompa (s)") },
+                label = { Text("Durasi Aktivasi Pompa (detik)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = maxMain,
-                onValueChange = onMaxMainChange,
-                label = { Text("Level Maksimal Tangki Utama (cm)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = maxNutrientA,
-                onValueChange = onMaxNutrientAChange,
-                label = { Text("Level Maksimal Tangki Nutrisi A (cm)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = maxNutrientB,
-                onValueChange = onMaxNutrientBChange,
-                label = { Text("Level Maksimal Tangki Nutrisi B (cm)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = maxPhUp,
-                onValueChange = onMaxPhUpChange,
-                label = { Text("Level Maksimal Tangki pH-Up (cm)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = maxPhDown,
-                onValueChange = onMaxPhDownChange,
-                label = { Text("Level Maksimal Tangki pH-Down (cm)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                enabled = enabled
             )
 
             Spacer(Modifier.height(24.dp))
@@ -123,13 +71,15 @@ fun OtherSettingsCard(
                 horizontalArrangement = Arrangement.End
             ) {
                 OutlinedButton(
-                    onClick = onCancelClick
+                    onClick = onCancelClick,
+                    enabled = enabled
                 ) {
                     Text("Batal")
                 }
                 Spacer(Modifier.width(16.dp))
                 Button(
-                    onClick = onSaveClick
+                    onClick = onSaveClick,
+                    enabled = enabled
                 ) {
                     Text("Simpan")
                 }

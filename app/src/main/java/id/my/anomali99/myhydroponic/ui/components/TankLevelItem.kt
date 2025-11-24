@@ -19,24 +19,41 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun TankLevelItem(name: String, level: Float, max: Float, modifier: Modifier = Modifier) {
     val currentLevel = level.coerceIn(0f, max)
+    val progressValue = (currentLevel / max).coerceIn(0f, 1f)
+    val percentage = (progressValue * 100).toInt()
+
+    val progressColor = when {
+        progressValue < 0.2f -> MaterialTheme.colorScheme.error
+        progressValue < 0.5f -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.primary
+    }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 8.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(name, style = MaterialTheme.typography.bodyLarge)
-            Text("$currentLevel / $max (cm)", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+            Text(name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            Text(
+                text = "$currentLevel / $max cm (${percentage}%)",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = progressColor
+            )
         }
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(6.dp))
         LinearProgressIndicator(
-            progress = (currentLevel / max),
-            modifier = Modifier.fillMaxWidth()
+            progress = progressValue,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp),
+            color = progressColor,
+            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
     }
 }

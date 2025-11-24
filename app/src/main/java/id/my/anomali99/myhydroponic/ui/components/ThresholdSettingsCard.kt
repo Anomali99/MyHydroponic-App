@@ -39,18 +39,22 @@ fun ThresholdSettingsCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.medium
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
             Text(
                 text = "Pengaturan Ambang Batas",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp)
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -58,7 +62,7 @@ fun ThresholdSettingsCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Aktifkan Ambang Batas",
+                    text = "Aktifkan Sistem Otomatis",
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Switch(
@@ -72,6 +76,12 @@ fun ThresholdSettingsCard(
 
             val fieldsEnabled = enabled && thresholdEnabled
 
+            Text(
+                text = "Ambang Batas pH",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -96,6 +106,12 @@ fun ThresholdSettingsCard(
 
             Spacer(Modifier.height(16.dp))
 
+            Text(
+                text = "Ambang Batas TDS",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -125,13 +141,15 @@ fun ThresholdSettingsCard(
                 horizontalArrangement = Arrangement.End
             ) {
                 OutlinedButton(
-                    onClick = onCancelClick
+                    onClick = onCancelClick,
+                    enabled = enabled
                 ) {
                     Text("Batal")
                 }
                 Spacer(Modifier.width(16.dp))
                 Button(
-                    onClick = onSaveClick
+                    onClick = onSaveClick,
+                    enabled = enabled
                 ) {
                     Text("Simpan")
                 }
