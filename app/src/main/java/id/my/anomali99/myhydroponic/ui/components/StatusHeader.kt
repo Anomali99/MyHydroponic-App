@@ -74,6 +74,7 @@ fun StatusHeader(isOnline: Boolean, datetime: String, onRefresh: () -> Unit) {
 
             Button(
                 onClick = onRefresh,
+                enabled = isOnline,
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 shape = MaterialTheme.shapes.small
             ) {

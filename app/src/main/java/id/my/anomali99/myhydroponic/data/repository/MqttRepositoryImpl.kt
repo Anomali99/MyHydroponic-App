@@ -1,6 +1,5 @@
 package id.my.anomali99.myhydroponic.data.repository
 
-import androidx.compose.ui.unit.Constraints
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -29,8 +28,8 @@ class MqttRepositoryImpl @Inject constructor(
         val clientId = "android-client-${System.currentTimeMillis()}"
         mqttClient.connect(wsUri, clientId, username, password)
 
-        mqttClient.subscribe(dataTopic, qos = 0)
-        mqttClient.subscribe(deviceStatus, qos = 0)
+        mqttClient.subscribe(dataTopic, qos = 1)
+        mqttClient.subscribe(deviceStatus, qos = 1)
     }
 
     override fun getMqttDataFlow(): Flow<EnvironmentModel> {
@@ -53,7 +52,7 @@ class MqttRepositoryImpl @Inject constructor(
             .filter { (topic, payload ) ->
                 topic == deviceStatus && payload.isNotBlank()
             }
-            .map { (topic, payload) -> payload == "1" }
+            .map { (topic, payload) -> payload.trim() == "1" }
     }
 
     override suspend fun sendMqttCommand(topic: String, message: String) {

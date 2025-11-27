@@ -146,17 +146,20 @@ fun DashboardScreen(
                     ActionButtonCard(
                         text = "Tambah\nNutrisi",
                         onClick = viewModel::onAddNutritionClicked,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        enabled = uiState.deviceIsActive
                     )
                     ActionButtonCard(
                         text = "Tambah\npH-Up",
                         onClick = viewModel::onAddPhUpClicked,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        enabled = uiState.deviceIsActive
                     )
                     ActionButtonCard(
                         text = "Tambah\npH-Down",
                         onClick = viewModel::onAddPhDownClicked,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        enabled = uiState.deviceIsActive
                     )
                 }
             }

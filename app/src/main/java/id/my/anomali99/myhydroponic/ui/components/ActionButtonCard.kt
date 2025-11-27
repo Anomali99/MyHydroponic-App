@@ -31,13 +31,41 @@ import androidx.compose.ui.unit.sp
 fun ActionButtonCard(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
+    // Tentukan warna berdasarkan status 'enabled'
+    val containerColor = if (enabled) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    val iconContainerColor = if (enabled) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+    }
+
+    val iconColor = if (enabled) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
+    val textColor = if (enabled) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+
     Card(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = containerColor
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         shape = MaterialTheme.shapes.medium
@@ -55,9 +83,9 @@ fun ActionButtonCard(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(MaterialTheme.shapes.extraLarge)
-                    .background(MaterialTheme.colorScheme.primary)
+                    .background(iconContainerColor)
                     .padding(8.dp),
-                tint = MaterialTheme.colorScheme.onPrimary
+                tint = iconColor
             )
             Spacer(Modifier.height(10.dp))
             Text(
@@ -66,7 +94,7 @@ fun ActionButtonCard(
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
                 lineHeight = 18.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = textColor
             )
         }
     }

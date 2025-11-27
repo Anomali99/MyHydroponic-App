@@ -1,5 +1,6 @@
 package id.my.anomali99.myhydroponic.ui.screen.dashboard
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,6 +55,8 @@ class DashboardViewModel @Inject constructor(
     init {
         startMqttConnection()
         collectMqttData()
+        collectDeviceStatus()
+
     }
 
     fun loadSettings() {
@@ -85,6 +88,28 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    private fun collectDeviceStatus() {
+        viewModelScope.launch {
+            subscribeToMqttDeviceUseCase()
+                .catch { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Error data stream: ${e.message}"
+                        )
+                    }
+                }
+                .collect { status ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            deviceIsActive = status
+                        )
+                    }
+                }
+        }
+    }
+
     private fun collectMqttData() {
         viewModelScope.launch {
             subscribeToMqttDataUseCase()
@@ -112,24 +137,6 @@ class DashboardViewModel @Inject constructor(
                         )
                     }
                 }
-
-            subscribeToMqttDeviceUseCase()
-                .catch { e ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = "Error data stream: ${e.message}"
-                        )
-                    }
-                }
-                .collect { status ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            deviceIsActive = status
-                        )
-                    }
-                }
         }
     }
 
@@ -152,7 +159,7 @@ class DashboardViewModel @Inject constructor(
             try {
                 sendToMqttTopicUseCase(
                     Constants.ENV_REFRESH,
-                    command = "{ \"status\": true, \"url\": null }"
+                    command = "1"
                 )
             } catch (e: Exception) {
                 e.printStackTrace()

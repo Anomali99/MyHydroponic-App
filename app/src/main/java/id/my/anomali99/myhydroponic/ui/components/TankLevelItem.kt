@@ -40,7 +40,7 @@ fun TankLevelItem(name: String, level: Float, max: Float, modifier: Modifier = M
         ) {
             Text(name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
             Text(
-                text = "$currentLevel / $max cm (${percentage}%)",
+                text = "$currentLevel / $max ml (${percentage}%)",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = progressColor
