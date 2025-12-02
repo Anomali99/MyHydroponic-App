@@ -14,6 +14,7 @@ import javax.inject.Singleton
 
 import id.my.anomali99.myhydroponic.data.local.datastore.SettingsDataStore
 import id.my.anomali99.myhydroponic.data.remote.api.ApiService
+import id.my.anomali99.myhydroponic.data.remote.api.AuthInterceptor
 import id.my.anomali99.myhydroponic.data.remote.fcm.FcmManager
 import id.my.anomali99.myhydroponic.data.remote.mqtt.MqttClientWrapper
 import id.my.anomali99.myhydroponic.data.repository.MainRepositoryImpl
@@ -26,6 +27,8 @@ import id.my.anomali99.myhydroponic.domain.usecase.GetThresholdUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.ManageTopicSubscriptionUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.UpdateThresholdUseCase
 import id.my.anomali99.myhydroponic.utils.Constants
+import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -65,10 +68,27 @@ abstract class AppModule {
 
         @Provides
         @Singleton
-        fun provideApiService(): ApiService {
+        fun provideAuthInterceptor(settingsDataStore: SettingsDataStore): AuthInterceptor {
+            return AuthInterceptor(settingsDataStore)
+        }
+
+        @Provides
+        @Singleton
+        fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+            return OkHttpClient.Builder()
+                .addInterceptor(authInterceptor)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build()
+        }
+
+        @Provides
+        @Singleton
+        fun provideApiService(client: OkHttpClient): ApiService {
             return Retrofit.Builder()
                 .baseUrl(Constants.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
                 .build()
                 .create(ApiService::class.java)
         }

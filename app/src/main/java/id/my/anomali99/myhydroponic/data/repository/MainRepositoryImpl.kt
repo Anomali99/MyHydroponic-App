@@ -20,6 +20,14 @@ class MainRepositoryImpl @Inject constructor(
         settingsDataStore.saveSubscribe(status)
     }
 
+    override fun getApiToken(): Flow<String> {
+        return settingsDataStore.apiTokenFlow
+    }
+
+    override suspend fun saveApiToken(token: String) {
+        return settingsDataStore.saveApiToken(token)
+    }
+
     override fun getLocalFcmToken(): Flow<String?> {
         return settingsDataStore.fcmTokenFlow
     }

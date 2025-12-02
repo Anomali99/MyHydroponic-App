@@ -159,7 +159,9 @@ fun SettingsScreen(
 
                 OtherSettingsCard(
                     duration = uiState.duration,
+                    token = uiState.apiToken,
                     onDurationChange = viewModel::onDurationChanged,
+                    onTokenChange = viewModel::onTokenChanged,
                     onSaveClick = viewModel::onSaveOtherClicked,
                     onCancelClick = viewModel::onCancelOtherClicked,
                     enabled = !uiState.isLoading

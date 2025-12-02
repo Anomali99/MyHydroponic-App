@@ -6,9 +6,11 @@ interface MainRepository {
     fun isSubscribe(): Flow<Boolean>
     suspend fun setIsSubscribe(status: Boolean)
 
+    fun getApiToken(): Flow<String>
+    suspend fun saveApiToken(token: String)
+
     fun getLocalFcmToken(): Flow<String?>
     suspend fun saveLocalFcmToken(token: String)
-
     suspend fun getRemoteFcmToken(): String?
 
     suspend fun subscribeToTopic(): Boolean

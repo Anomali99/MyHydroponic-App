@@ -30,11 +30,17 @@ class SettingsRepositoryImpl @Inject constructor(
                     thresholdEnabled = dto.thresholdEnabled
                 )
                 emit(Resource.Success(domainModel))
-            } else {
+            } else if (response.code() == 401) {
+                emit(Resource.Error("Token API ditolak. Pastikan token yang Anda masukkan benar."))
+            }else {
                 emit(Resource.Error("Gagal mengambil data: ${response.message()}"))
             }
         } catch (e: HttpException) {
-            emit(Resource.Error("Terjadi kesalahan HTTP: ${e.message()}"))
+            if (e.code() == 401) {
+                emit(Resource.Error("Token API ditolak. Pastikan token yang Anda masukkan benar."))
+            } else {
+                emit(Resource.Error("Terjadi kesalahan HTTP: ${e.message()}"))
+            }
         } catch (e: IOException) {
             emit(Resource.Error("Tidak dapat terhubung ke server. Periksa koneksi internet Anda."))
         }
@@ -62,11 +68,17 @@ class SettingsRepositoryImpl @Inject constructor(
                     thresholdEnabled = resultDto.thresholdEnabled
                 )
                 Resource.Success(resultDomainModel)
+            } else if (response.code() == 401) {
+                Resource.Error("Token API ditolak. Pastikan token yang Anda masukkan benar.")
             } else {
-                Resource.Error("Gagal memperbarui data: ${response.message()}")
+                Resource.Error("Gagal memperbarui data: ${response.message()} (${response.code()})")
             }
         } catch (e: HttpException) {
-            Resource.Error("Terjadi kesalahan HTTP: ${e.message()}")
+            if (e.code() == 401) {
+                Resource.Error("Token API ditolak. Pastikan token yang Anda masukkan benar.")
+            } else {
+                Resource.Error("Terjadi kesalahan HTTP: ${e.message()}")
+            }
         } catch (e: IOException) {
             Resource.Error("Tidak dapat terhubung ke server. Periksa koneksi internet Anda.")
         }

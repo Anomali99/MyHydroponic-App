@@ -7,6 +7,14 @@ import javax.inject.Inject
 class ManageSettingsDataUseCase @Inject constructor(
     private val repository: MainRepository) {
 
+    suspend fun getApiToken(): String{
+        return repository.getApiToken().first()
+    }
+
+    suspend fun setApiToken(token: String) {
+        repository.saveApiToken(token)
+    }
+
     suspend fun getDuration(): Float{
         return repository.getDuration().first()
     }

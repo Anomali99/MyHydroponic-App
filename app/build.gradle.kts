@@ -26,7 +26,7 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -56,6 +56,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.3")
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")

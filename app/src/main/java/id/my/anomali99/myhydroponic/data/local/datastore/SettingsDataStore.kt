@@ -22,10 +22,22 @@ class SettingsDataStore @Inject constructor(
     private val dataStore = context.dataStore
 
     private object PreferencesKeys {
+        val API_TOKEN = stringPreferencesKey("api_token")
         val FCM_TOKEN = stringPreferencesKey("fcm_token")
         val SUBSCRIBE = booleanPreferencesKey("subscribe")
         val DURATION = floatPreferencesKey("duration")
     }
+
+    suspend fun saveApiToken(token: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.API_TOKEN] = token
+        }
+    }
+
+    val apiTokenFlow: Flow<String> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.API_TOKEN] ?: "512706"
+        }
 
     suspend fun saveFcmToken(token: String) {
         dataStore.edit { preferences ->

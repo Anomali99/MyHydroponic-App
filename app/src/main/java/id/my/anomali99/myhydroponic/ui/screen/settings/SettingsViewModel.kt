@@ -28,12 +28,14 @@ data class SettingsUiState(
     val tdsMin: String = "800",
     val tdsMax: String = "1200",
     val duration: String = "1.0",
+    val apiToken: String = "5127",
     val errorMessage: String? = null,
     val saveSuccess: Boolean = false
 )
 
 data class OtherModel(
     val duration: String,
+    val apiToken: String,
 )
 
 @HiltViewModel
@@ -83,16 +85,19 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val isSubscribed = manageTopicSubscriptionUseCase.isSubscribe()
             val duration = manageSettingsDataUseCase.getDuration().toString()
+            val apiToken = manageSettingsDataUseCase.getApiToken()
 
             _uiState.update {
                 it.copy(
                     notificationEnabled = isSubscribed,
-                    duration = duration
+                    duration = duration,
+                    apiToken = apiToken
                 )
             }
 
             originalOtherSettings = OtherModel(
-                duration = duration
+                duration = duration,
+                apiToken = apiToken
             )
         }
     }
@@ -131,6 +136,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onTdsMaxChanged(value: String) {
         _uiState.update { it.copy(tdsMax = value) }
+    }
+
+    fun onTokenChanged(value: String) {
+        _uiState.update { it.copy(apiToken = value) }
     }
 
     fun onDurationChanged(value: String) {
@@ -192,9 +201,11 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             originalOtherSettings = OtherModel(
                 duration = _uiState.value.duration,
+                apiToken=_uiState.value.apiToken
             )
 
             manageSettingsDataUseCase.setDuration(_uiState.value.duration.toFloat())
+            manageSettingsDataUseCase.setApiToken(_uiState.value.apiToken)
 
             val duration = manageSettingsDataUseCase.getDuration().toString()
 
@@ -211,7 +222,8 @@ class SettingsViewModel @Inject constructor(
         originalOtherSettings?.let { settings ->
             _uiState.update {
                 it.copy(
-                    duration = settings.duration
+                    duration = settings.duration,
+                    apiToken = settings.apiToken
                 )
             }
         }
