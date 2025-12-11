@@ -36,7 +36,7 @@ class SettingsDataStore @Inject constructor(
 
     val apiTokenFlow: Flow<String> = dataStore.data
         .map { preferences ->
-            preferences[PreferencesKeys.API_TOKEN] ?: "512706"
+            preferences[PreferencesKeys.API_TOKEN] ?: "7125"
         }
 
     suspend fun saveFcmToken(token: String) {
@@ -69,7 +69,7 @@ class SettingsDataStore @Inject constructor(
 
     val durationFlow: Flow<Float> = dataStore.data
         .map { preferences ->
-            preferences[PreferencesKeys.DURATION] ?: 1f
+            preferences[PreferencesKeys.DURATION] ?: 0.5f
         }
 
 }

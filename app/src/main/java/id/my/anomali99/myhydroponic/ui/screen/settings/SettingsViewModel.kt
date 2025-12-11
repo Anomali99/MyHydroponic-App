@@ -23,12 +23,12 @@ data class SettingsUiState(
     val isLoading: Boolean = false,
     val notificationEnabled: Boolean = true,
     val thresholdEnabled: Boolean = false,
-    val phMin: String = "6.0",
-    val phMax: String = "7.0",
-    val tdsMin: String = "800",
-    val tdsMax: String = "1200",
-    val duration: String = "1.0",
-    val apiToken: String = "5127",
+    val phMin: String = "5.5",
+    val phMax: String = "6.0",
+    val tdsMin: String = "640",
+    val tdsMax: String = "1024",
+    val duration: String = "0.5",
+    val apiToken: String = "7125",
     val errorMessage: String? = null,
     val saveSuccess: Boolean = false
 )

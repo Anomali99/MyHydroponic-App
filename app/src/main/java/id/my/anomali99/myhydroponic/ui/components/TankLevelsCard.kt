@@ -42,12 +42,13 @@ fun TankLevelsCard(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            TankLevelItem(name = "Tangki Utama", level = mainLevel, max = 20f)
             Divider(Modifier.padding(vertical = 4.dp))
-            TankLevelItem(name = "Nutrisi A", level = aLevel, max = 20f)
-            TankLevelItem(name = "Nutrisi B", level = bLevel, max = 20f)
-            TankLevelItem(name = "pH-Up", level = phUpLevel, max = 20f)
-            TankLevelItem(name = "pH-Down", level = phDownLevel, max = 20f)
+
+            TankLevelItem(name = "Tangki Utama", level = mainLevel, max = 22400f)
+            TankLevelItem(name = "Nutrisi A", level = aLevel, max = 377.14f)
+            TankLevelItem(name = "Nutrisi B", level = bLevel, max = 377.14f)
+            TankLevelItem(name = "pH-Up", level = phUpLevel, max = 377.14f)
+            TankLevelItem(name = "pH-Down", level = phDownLevel, max = 377.14f)
         }
     }
 }

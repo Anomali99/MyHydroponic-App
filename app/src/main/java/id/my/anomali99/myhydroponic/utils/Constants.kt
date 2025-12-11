@@ -5,7 +5,7 @@ object Constants {
 
     const val MQTT_URI = "wss://mqtt.anomali99.my.id"
     const val MQTT_USER = "mobile_user"
-    const val MQTT_PASS = "5127"
+    const val MQTT_PASS = "7125"
 
     const val ENV_DATA = "environment/data"
     const val ENV_REFRESH = "environment/refresh"

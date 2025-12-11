@@ -37,7 +37,7 @@ data class DashboardUiState(
     val phUpTank: Float = 0f,
     val phDownTank: Float = 0f,
     val datetime: String = "01 Januari 2001 00:00 WIB",
-    val duration: Float = 1f,
+    val duration: Float = 0.5f,
     val errorMessage: String? = null
 )
 
