@@ -52,7 +52,7 @@ class MqttRepositoryImpl @Inject constructor(
             .filter { (topic, payload ) ->
                 topic == deviceStatus && payload.isNotBlank()
             }
-            .map { (topic, payload) -> payload.trim() == "1" }
+            .map { (_, payload) -> payload.trim() == "1" }
     }
 
     override suspend fun sendMqttCommand(topic: String, message: String) {

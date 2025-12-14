@@ -20,7 +20,7 @@ class MqttClientWrapper @Inject constructor(
     private val context: Context
 ) {
 
-    private val _messages = MutableSharedFlow<Pair<String, String>>()
+    private val _messages = MutableSharedFlow<Pair<String, String>>(replay = 1)
     val messages = _messages.asSharedFlow()
 
     private var client: MqttClient? = null
