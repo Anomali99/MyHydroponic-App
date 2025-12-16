@@ -1,7 +1,9 @@
 package id.my.anomali99.myhydroponic.data.model
 
+import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
+@Keep
 data class EnvironmentModel(
     @SerializedName("ph")
     val ph: Float,

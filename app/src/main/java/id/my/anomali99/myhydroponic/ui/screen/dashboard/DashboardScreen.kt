@@ -109,17 +109,17 @@ fun DashboardScreen(
                         modifier = Modifier.weight(1f)
                     )
                     SensorCard(
-                        title = "TDS",
-                        value = uiState.tds,
-                        unit = "ppm",
+                        title = "Suhu Air",
+                        value = uiState.temp,
+                        unit = "°C",
                         modifier = Modifier.weight(1f)
                     )
                 }
 
                 SensorCard(
-                    title = "Suhu Air",
-                    value = uiState.temp,
-                    unit = "°C",
+                    title = "TDS",
+                    value = uiState.tds,
+                    unit = "ppm",
                     modifier = Modifier.fillMaxWidth()
                 )
             }

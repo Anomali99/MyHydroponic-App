@@ -1,5 +1,6 @@
 package id.my.anomali99.myhydroponic.data.repository
 
+import android.util.Log
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -25,6 +26,8 @@ class MqttRepositoryImpl @Inject constructor(
         val dataTopic = Constants.ENV_DATA
         val deviceStatus = Constants.DEVICE_STATUS
 
+        Log.d("MqttRepo", "Starting connection... Target Topic: $dataTopic")
+
         val clientId = "android-client-${System.currentTimeMillis()}"
         mqttClient.connect(wsUri, clientId, username, password)
 
@@ -37,9 +40,17 @@ class MqttRepositoryImpl @Inject constructor(
 
         return mqttClient.messages
             .filter { (topic, payload) ->
-                topic == dataTopic && payload.isNotBlank()
+                if (topic == dataTopic) {
+                    Log.d("MqttRepo", "FILTER PASS: Payload received from $topic")
+                    payload.isNotBlank()
+                } else {
+                    if (topic != Constants.DEVICE_STATUS && topic != "CONNECTION_LOST" && topic != "CONNECTION_ERROR") {
+                        Log.d("MqttRepo", "FILTER REJECT: Topic '$topic' is not equal to '$dataTopic'")
+                    }
+                    false
+                }
             }
-            .map { (topic, payload) -> payload }
+            .map { (_, payload) -> payload }
             .map { rawJsonPayload ->
                 parseJsonToSensorData(rawJsonPayload)
             }
@@ -52,7 +63,10 @@ class MqttRepositoryImpl @Inject constructor(
             .filter { (topic, payload ) ->
                 topic == deviceStatus && payload.isNotBlank()
             }
-            .map { (_, payload) -> payload.trim() == "1" }
+            .map { (_, payload) ->
+                Log.d("MqttRepo", "Device Status: $payload")
+                payload.trim() == "1"
+            }
     }
 
     override suspend fun sendMqttCommand(topic: String, message: String) {
@@ -66,9 +80,14 @@ class MqttRepositoryImpl @Inject constructor(
 
     private fun parseJsonToSensorData(payload: String): EnvironmentModel {
         return try {
-            gson.fromJson(payload, EnvironmentModel::class.java)
+            val data = gson.fromJson(payload, EnvironmentModel::class.java)
+            Log.d("MqttRepo", "JSON Parsing Successful! pH: ${data.ph}, Temp: ${data.temp}")
+            data
         } catch (e: Exception) {
+            Log.e("MqttRepo", "JSON PARSING ERROR: ${e.message}")
+            Log.e("MqttRepo", "Payload causing error: $payload")
             e.printStackTrace()
+
             EnvironmentModel(
                 ph = 0f,
                 tds = 0f,

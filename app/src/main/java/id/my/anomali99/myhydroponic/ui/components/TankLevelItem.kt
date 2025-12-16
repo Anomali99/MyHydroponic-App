@@ -15,17 +15,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 
 @Composable
-fun TankLevelItem(name: String, level: Float, max: Float, modifier: Modifier = Modifier) {
+fun TankLevelItem(name: String, level: Float, max: Float, min: Float = 0f, modifier: Modifier = Modifier) {
     val currentLevel = level.coerceIn(0f, max)
     val progressValue = (currentLevel / max).coerceIn(0f, 1f)
     val percentage = (progressValue * 100).toInt()
 
     val progressColor = when {
-        progressValue < 0.2f -> MaterialTheme.colorScheme.error
+        level < min -> MaterialTheme.colorScheme.error
         progressValue < 0.5f -> MaterialTheme.colorScheme.tertiary
         else -> MaterialTheme.colorScheme.primary
+    }
+
+    fun formatValue(value: Float): String {
+        val localeID = Locale("id", "ID")
+        return String.format(localeID, "%.2f", value)
+            .trimEnd('0')
+            .trimEnd(',')
     }
 
     Column(
@@ -40,7 +48,7 @@ fun TankLevelItem(name: String, level: Float, max: Float, modifier: Modifier = M
         ) {
             Text(name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
             Text(
-                text = "$currentLevel / $max ml (${percentage}%)",
+                text = "${formatValue(currentLevel)} / ${formatValue(max)} ml (${percentage}%)",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = progressColor

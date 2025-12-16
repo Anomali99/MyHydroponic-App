@@ -59,6 +59,13 @@ class DashboardViewModel @Inject constructor(
 
     }
 
+    private fun formatValue(value: Float): String {
+        val localeID = Locale("id", "ID")
+        return String.format(localeID, "%.2f", value)
+            .trimEnd('0')
+            .trimEnd(',')
+    }
+
     fun loadSettings() {
         viewModelScope.launch {
             val duration = manageSettingsDataUseCase.getDuration()
@@ -125,9 +132,9 @@ class DashboardViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            ph = newData.ph.toString(),
+                            ph = formatValue(newData.ph),
                             tds = newData.tds.toInt().toString(),
-                            temp = newData.temp.toString(),
+                            temp = formatValue(newData.temp),
                             mainTank = newData.mainTank,
                             phUpTank = newData.phUpTank,
                             phDownTank = newData.phDownTank,
