@@ -22,10 +22,11 @@ fun TankLevelItem(name: String, level: Float, max: Float, min: Float = 0f, modif
     val currentLevel = level.coerceIn(0f, max)
     val progressValue = (currentLevel / max).coerceIn(0f, 1f)
     val percentage = (progressValue * 100).toInt()
+    val median = min + (( max - min ) / 2 )
 
     val progressColor = when {
         level < min -> MaterialTheme.colorScheme.error
-        progressValue < 0.5f -> MaterialTheme.colorScheme.tertiary
+        level < median -> MaterialTheme.colorScheme.tertiary
         else -> MaterialTheme.colorScheme.primary
     }
 
