@@ -23,6 +23,7 @@ import id.my.anomali99.myhydroponic.domain.usecase.StartMqttConnectionUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.SubscribeToMqttDataUseCase
 import id.my.anomali99.myhydroponic.domain.usecase.SubscribeToMqttDeviceUseCase
 import id.my.anomali99.myhydroponic.utils.Constants
+import kotlinx.coroutines.delay
 
 data class DashboardUiState(
     val isLoading: Boolean = false,
@@ -158,6 +159,27 @@ class DashboardViewModel @Inject constructor(
         val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm z", indonesiaLocale)
 
         return zonedDateTime.format(outputFormatter)
+    }
+
+    fun reloadDashboard() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            try {
+                startMqttConnectionUseCase()
+
+                val duration = manageSettingsDataUseCase.getDuration()
+                _uiState.update { it.copy(duration = duration) }
+
+                delay(3000)
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.update { it.copy(errorMessage = "Failed to reload: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
     }
 
     fun onRefreshClicked(){

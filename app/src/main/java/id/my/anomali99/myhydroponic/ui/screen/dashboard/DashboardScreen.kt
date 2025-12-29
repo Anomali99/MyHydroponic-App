@@ -8,11 +8,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,6 +45,8 @@ fun DashboardScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val pullRefreshState = rememberPullToRefreshState()
+
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         viewModel.loadSettings()
     }
@@ -52,6 +58,18 @@ fun DashboardScreen(
                 duration = SnackbarDuration.Short
             )
             viewModel.dismissError()
+        }
+    }
+
+    if (pullRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            viewModel.reloadDashboard()
+        }
+    }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            pullRefreshState.endRefresh()
         }
     }
 
@@ -78,92 +96,105 @@ fun DashboardScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .nestedScroll(pullRefreshState.nestedScrollConnection)
         ) {
-
-            StatusHeader(
-                isOnline = uiState.deviceIsActive,
-                datetime = uiState.datetime,
-                onRefresh = viewModel::onRefreshClicked
-            )
-
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
+
+                StatusHeader(
+                    isOnline = uiState.deviceIsActive,
+                    datetime = uiState.datetime,
+                    onRefresh = viewModel::onRefreshClicked
+                )
+
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        SensorCard(
+                            title = "pH Air",
+                            value = uiState.ph,
+                            unit = null,
+                            modifier = Modifier.weight(1f)
+                        )
+                        SensorCard(
+                            title = "Suhu Air",
+                            value = uiState.temp,
+                            unit = "°C",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
                     SensorCard(
-                        title = "pH Air",
-                        value = uiState.ph,
-                        unit = null,
-                        modifier = Modifier.weight(1f)
-                    )
-                    SensorCard(
-                        title = "Suhu Air",
-                        value = uiState.temp,
-                        unit = "°C",
-                        modifier = Modifier.weight(1f)
+                        title = "TDS",
+                        value = uiState.tds,
+                        unit = "ppm",
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
-                SensorCard(
-                    title = "TDS",
-                    value = uiState.tds,
-                    unit = "ppm",
-                    modifier = Modifier.fillMaxWidth()
+                TankLevelsCard(
+                    mainLevel = uiState.mainTank,
+                    aLevel = uiState.aTank,
+                    bLevel = uiState.bTank,
+                    phUpLevel = uiState.phUpTank,
+                    phDownLevel = uiState.phDownTank
                 )
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "Kontrol Manual",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        ActionButtonCard(
+                            text = "Tambah\nNutrisi",
+                            onClick = viewModel::onAddNutritionClicked,
+                            modifier = Modifier.weight(1f),
+                            enabled = uiState.deviceIsActive
+                        )
+                        ActionButtonCard(
+                            text = "Tambah\npH-Up",
+                            onClick = viewModel::onAddPhUpClicked,
+                            modifier = Modifier.weight(1f),
+                            enabled = uiState.deviceIsActive
+                        )
+                        ActionButtonCard(
+                            text = "Tambah\npH-Down",
+                            onClick = viewModel::onAddPhDownClicked,
+                            modifier = Modifier.weight(1f),
+                            enabled = uiState.deviceIsActive
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
             }
 
-            TankLevelsCard(
-                mainLevel = uiState.mainTank,
-                aLevel = uiState.aTank,
-                bLevel = uiState.bTank,
-                phUpLevel = uiState.phUpTank,
-                phDownLevel = uiState.phDownTank
+            PullToRefreshContainer(
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
             )
-
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    "Kontrol Manual",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    ActionButtonCard(
-                        text = "Tambah\nNutrisi",
-                        onClick = viewModel::onAddNutritionClicked,
-                        modifier = Modifier.weight(1f),
-                        enabled = uiState.deviceIsActive
-                    )
-                    ActionButtonCard(
-                        text = "Tambah\npH-Up",
-                        onClick = viewModel::onAddPhUpClicked,
-                        modifier = Modifier.weight(1f),
-                        enabled = uiState.deviceIsActive
-                    )
-                    ActionButtonCard(
-                        text = "Tambah\npH-Down",
-                        onClick = viewModel::onAddPhDownClicked,
-                        modifier = Modifier.weight(1f),
-                        enabled = uiState.deviceIsActive
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
         }
     }
 }

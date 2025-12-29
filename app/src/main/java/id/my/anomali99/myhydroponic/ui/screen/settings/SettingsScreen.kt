@@ -17,12 +17,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
@@ -50,6 +53,8 @@ fun SettingsScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val pullRefreshState = rememberPullToRefreshState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -97,6 +102,18 @@ fun SettingsScreen(
         }
     }
 
+    if (pullRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            viewModel.loadSettings()
+        }
+    }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            pullRefreshState.endRefresh()
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -125,6 +142,7 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .nestedScroll(pullRefreshState.nestedScrollConnection)
         ) {
             Column(
                 modifier = Modifier
@@ -173,6 +191,13 @@ fun SettingsScreen(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
+
+            PullToRefreshContainer(
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
