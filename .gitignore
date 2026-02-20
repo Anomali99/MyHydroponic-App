@@ -4,6 +4,8 @@
 *.iml
 *.ipr
 *.iws
+.tmp/
+daemon/
 out/
 
 # --- Gradle ---
