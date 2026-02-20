@@ -1,19 +1,52 @@
+# --- Android Studio / IntelliJ IDEA ---
+# Pengaturan user-specific (workspace) dan cache editor
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+*.ipr
+*.iws
+out/
+
+# --- Gradle ---
+# Cache dan file build sementara
+.gradle/
+build/
+app/build/
+.kotlin
+
+# --- Local Configuration ---
+# File ini berisi path SDK di komputer Anda (JANGAN DI-PUSH)
 local.properties
-/app/google-services.json
-/build
-/.idea
-*.iml
+
+# --- Android ---
+# Folder capture (log/screenshot dari AS)
+captures/
+# Native build (jika pakai C++)
+.externalNativeBuild
+.cxx/
+
+# --- Keystore / Signing (SANGAT PENTING) ---
+# Kunci rahasia jangan sampai naik ke GitHub
+*.jks
+*.keystore
+*.pem
+*.p12
+*.key
+
+# --- OS Specific ---
+# File sampah Mac/Windows
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# --- Generated Files ---
+# File hasil compile
+*.apk
+*.aab
+*.aar
+
+app/google-services.json
+app/relese/*
