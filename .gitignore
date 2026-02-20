@@ -11,7 +11,11 @@ out/
 .gradle/
 build/
 app/build/
-.kotlin
+.kotlin/
+
+# --- Tambahan untuk Mencegah Error File Raksasa ---
+caches/
+wrapper/dists/
 
 # --- Local Configuration ---
 # File ini berisi path SDK di komputer Anda (JANGAN DI-PUSH)
@@ -48,5 +52,6 @@ Thumbs.db
 *.aab
 *.aar
 
+# --- Konfigurasi dan Output Spesifik Proyek ---
 app/google-services.json
-app/relese/*
+app/release/*
